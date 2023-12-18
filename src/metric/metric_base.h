@@ -2,27 +2,28 @@
 #define __METRIC_BASE_H_
 
 #include <string>
+#include <iostream>
 #include <unordered_map>
 #include <initializer_list>
 #include <sstream>
+#include <atomic>
 
 using LabelList = std::initializer_list<std::pair<const std::string, std::string>>;
 
 template <typename Value>
 class MetricBase {
 public:
-  MetricBase(const std::string& metric_name, const std::string& metric_help, LabelList labels) : metric_name_(metric_name), metric_labels_(labels), value_(0), is_dynamic_label_mode_(false) {
+  MetricBase(const std::string& metric_name, const std::string& metric_help, LabelList labels) : metric_name_(metric_name), metric_labels_(labels) {
     metric_help_string_ = "# HELP " + metric_name + " " + metric_help;
     name_and_label_ = GenLabelString();
   }
   ~MetricBase() = default;
   virtual std::string Collect() {return "";}
-  void SetValue(Value& v) {value_ = v;}
   void AddLabel(LabelList l) {
     for (auto& p : l) {
       metric_labels_.insert(p);
     }
-    is_dynamic_label_mode_ = true;
+    name_and_label_ = GenLabelString();
   }
   void Init() {
     GenPromeTypeStr();
@@ -40,8 +41,15 @@ private:
   std::string GenLabelString() {
     std::stringstream ss;
     ss << metric_name_ << "{";
-    for (auto& p : metric_labels_) {
-      ss << p.first << "=\"" << p.second << "\", ";
+    auto it = metric_labels_.begin();
+    while (true) {
+      ss << (*it).first << "=\"" << (*it).second << "\"";
+      if (++it != metric_labels_.end()) {
+        ss << ",";
+      }
+      if (it == metric_labels_.end()) {
+        break;
+      }
     }
     ss << "}";
     return ss.str();
@@ -52,8 +60,6 @@ protected:
   std::string metric_type_string_;
   std::string name_and_label_;
   std::unordered_map<std::string, std::string> metric_labels_;
-  Value value_;
-  bool is_dynamic_label_mode_;
 };
 
 #endif
