@@ -5,7 +5,7 @@ add_requires("glog", "gflags", "civetweb")
 target("prometheus-cpp-client")
     add_packages("glog", "gflags", "civetweb")
     set_kind("binary")
-    add_files("src/*.cc")
+    add_files("src/**.cc")
     add_includedirs("src")
 
 --
