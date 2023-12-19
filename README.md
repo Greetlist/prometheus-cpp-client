@@ -13,3 +13,7 @@ Prometheus Four Metric Type Class
 1000 Counter + 1000 Guage + 1000 Histogram
 
 Every Scrape to `/metrics` avg cost nearly `25ms`
+
+
+## Usage
+Refer to `src/main.cc`
