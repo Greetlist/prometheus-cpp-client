@@ -4,7 +4,7 @@
 #include "metric/metric_base.h"
 
 template <typename Value>
-class Counter : public MetricBase<Value> {
+class Counter : public MetricBase {
 public:
   Counter(const std::string& metric_name, const std::string& metric_help, LabelList labels);
   ~Counter() = default;
@@ -18,15 +18,15 @@ private:
 };
 
 template <typename Value>
-Counter<Value>::Counter(const std::string& metric_name, const std::string& metric_help, LabelList labels) : MetricBase<Value>(metric_name, metric_help, labels), value_(0) {
+Counter<Value>::Counter(const std::string& metric_name, const std::string& metric_help, LabelList labels) : MetricBase(metric_name, metric_help, labels), value_(0) {
 }
 
 template <typename Value>
 std::string Counter<Value>::Collect() {
   std::string res{""};
-  res += MetricBase<Value>::metric_help_string_ + HTTP_CRLF;
-  res += MetricBase<Value>::metric_type_string_ + HTTP_CRLF;
-  res += MetricBase<Value>::name_and_label_ + " ";
+  res += metric_help_string_ + HTTP_CRLF;
+  res += metric_type_string_ + HTTP_CRLF;
+  res += name_and_label_ + " ";
   res += std::to_string(value_);
   return res;
 }
@@ -49,7 +49,7 @@ void Counter<Value>::AddValue(Value incr) {
 
 template <typename Value>
 void Counter<Value>::GenPromeTypeStr() {
-  MetricBase<Value>::metric_type_string_ = "# TYPE " + MetricBase<Value>::metric_name_ + " counter";
+  metric_type_string_ = "# TYPE " + metric_name_ + " counter";
 }
 
 #endif

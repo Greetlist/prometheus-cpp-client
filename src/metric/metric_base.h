@@ -11,7 +11,6 @@
 using LabelList = std::initializer_list<std::pair<const std::string, std::string>>;
 #define HTTP_CRLF "\r\n"
 
-template <typename Value>
 class MetricBase {
 public:
   MetricBase(const std::string& metric_name, const std::string& metric_help, LabelList labels) : metric_name_(metric_name), metric_labels_(labels) {

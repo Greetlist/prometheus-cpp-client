@@ -7,6 +7,8 @@ target("prometheus-cpp-client")
     set_kind("binary")
     add_files("src/**.cc")
     add_includedirs("src")
+    set_languages("c++17")
+    set_warnings("all", "error")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

@@ -2,7 +2,7 @@
 #define __GUAGE_H_
 
 template <typename Value>
-class Guage : public MetricBase<Value> {
+class Guage : public MetricBase {
 public:
   Guage(const std::string& metric_name, const std::string& metric_help, LabelList labels);
   ~Guage() = default;
@@ -18,15 +18,15 @@ private:
 };
 
 template <typename Value>
-Guage<Value>::Guage(const std::string& metric_name, const std::string& metric_help, LabelList labels) : MetricBase<Value>(metric_name, metric_help, labels), value_(0) {
+Guage<Value>::Guage(const std::string& metric_name, const std::string& metric_help, LabelList labels) : MetricBase(metric_name, metric_help, labels), value_(0) {
 }
 
 template <typename Value>
 std::string Guage<Value>::Collect() {
   std::string res{""};
-  res += MetricBase<Value>::metric_help_string_ + HTTP_CRLF;
-  res += MetricBase<Value>::metric_type_string_ + HTTP_CRLF;
-  res += MetricBase<Value>::name_and_label_ + " ";
+  res += metric_help_string_ + HTTP_CRLF;
+  res += metric_type_string_ + HTTP_CRLF;
+  res += name_and_label_ + " ";
   res += std::to_string(value_);
   return res;
 }
@@ -58,7 +58,7 @@ void Guage<Value>::SubValue(Value sub) {
 
 template <typename Value>
 void Guage<Value>::GenPromeTypeStr() {
-  MetricBase<Value>::metric_type_string_ = "# TYPE " + MetricBase<Value>::metric_name_ + " guage";
+  metric_type_string_ = "# TYPE " + metric_name_ + " guage";
 }
 
 #endif

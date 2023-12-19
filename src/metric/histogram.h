@@ -6,7 +6,7 @@
 #include <cassert>
 
 template <typename Value>
-class Histogram : public MetricBase<Value> {
+class Histogram : public MetricBase {
 public:
   Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::initializer_list<Value>& buckets);
   ~Histogram() = default;
@@ -22,7 +22,7 @@ private:
 };
 
 template <typename Value>
-Histogram<Value>::Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::initializer_list<Value>& buckets) : MetricBase<Value>(metric_name, metric_help, labels), buckets_(buckets) {
+Histogram<Value>::Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::initializer_list<Value>& buckets) : MetricBase(metric_name, metric_help, labels), buckets_(buckets) {
   assert(CheckBucketsIncrement());
   buckets_counter_ = std::vector<int>(buckets_.size() + 1, 0);
 }
@@ -40,19 +40,19 @@ void Histogram<Value>::Observe(const Value v) {
 template <typename Value>
 std::string Histogram<Value>::Collect() {
   std::string res{""};
-  res += MetricBase<Value>::metric_help_string_ + HTTP_CRLF;
-  res += MetricBase<Value>::metric_type_string_ + HTTP_CRLF;
+  res += metric_help_string_ + HTTP_CRLF;
+  res += metric_type_string_ + HTTP_CRLF;
 
   int bucket_size = buckets_.size();
   for (int i = 0; i < bucket_size + 1; ++i) {
     if (i == bucket_size) {
-      MetricBase<Value>::metric_labels_["le"] = "Inf";
-      std::string cur_name_and_label = MetricBase<Value>::GenLabelString();
+      metric_labels_["le"] = "Inf";
+      std::string cur_name_and_label = GenLabelString();
       res += cur_name_and_label + " ";
       res += std::to_string(InfinityValue_);
     } else {
-      MetricBase<Value>::metric_labels_["le"] = std::to_string(buckets_[i]);
-      std::string cur_name_and_label = MetricBase<Value>::GenLabelString();
+      metric_labels_["le"] = std::to_string(buckets_[i]);
+      std::string cur_name_and_label = GenLabelString();
       res += cur_name_and_label + " ";
       res += std::to_string(buckets_counter_[i]);
       res += HTTP_CRLF;
@@ -95,7 +95,7 @@ bool Histogram<Value>::CheckBucketsIncrement() {
 
 template <typename Value>
 void Histogram<Value>::GenPromeTypeStr() {
-  MetricBase<Value>::metric_type_string_ = "# TYPE " + MetricBase<Value>::metric_name_ + " histogram";
+  metric_type_string_ = "# TYPE " + metric_name_ + " histogram";
 }
 
 #endif
