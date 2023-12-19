@@ -27,7 +27,7 @@ std::string Counter<Value>::Collect() {
   res += metric_help_string_ + HTTP_CRLF;
   res += metric_type_string_ + HTTP_CRLF;
   res += name_and_label_ + " ";
-  res += std::to_string(value_);
+  res += std::to_string(value_.load());
   res += HTTP_CRLF;
   return res;
 }
@@ -39,7 +39,6 @@ void Counter<Value>::SetValue(Value& v) {
 
 template <typename Value>
 void Counter<Value>::operator++(int) {
-  //value_.fetch_add(1);
   value_++;
 }
 

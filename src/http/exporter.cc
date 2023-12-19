@@ -23,6 +23,7 @@ std::unordered_map<MetricBase*, int>& Exporter::GetMetricMap() {
 }
 
 bool ScrapeHandler::handleGet(CivetServer* server, struct mg_connection* conn) {
+  auto start_time = std::chrono::system_clock::now();
   mg_printf(conn, "HTTP/1.1 200 OK" HTTP_CRLF);
   mg_printf(conn, "Content-Type: text/html" HTTP_CRLF);
   mg_printf(conn, "Connection: close" HTTP_CRLF HTTP_CRLF);
@@ -31,5 +32,7 @@ bool ScrapeHandler::handleGet(CivetServer* server, struct mg_connection* conn) {
   for (auto [metric, i] : metric_map) {
     mg_printf(conn, "%s", metric->Collect().c_str());
   }
+  auto end_time = std::chrono::system_clock::now();
+  std::cout << "Single Scrape Cost: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << std::endl;
   return true;
 }

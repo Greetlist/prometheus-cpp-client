@@ -27,7 +27,7 @@ std::string Guage<Value>::Collect() {
   res += metric_help_string_ + HTTP_CRLF;
   res += metric_type_string_ + HTTP_CRLF;
   res += name_and_label_ + " ";
-  res += std::to_string(value_);
+  res += std::to_string(value_.load());
   res += HTTP_CRLF;
   return res;
 }
@@ -44,17 +44,17 @@ void Guage<Value>::operator++(int) {
 
 template <typename Value>
 void Guage<Value>::operator--(int) {
-  //value_.fetch_;
+  value_.fetch_sub(-1);
 }
 
 template <typename Value>
 void Guage<Value>::AddValue(Value incr) {
-  //value_ += incr;
+  value_.fetch_add(incr);
 }
 
 template <typename Value>
 void Guage<Value>::SubValue(Value sub) {
-  //value_ -= sub;
+  value_.fetch_sub(sub);
 }
 
 template <typename Value>

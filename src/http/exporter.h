@@ -4,6 +4,7 @@
 #include <CivetServer.h>
 #include <string>
 #include <unordered_map>
+#include <chrono>
 #include "metric/metric_base.h"
 
 class Exporter : public CivetServer {

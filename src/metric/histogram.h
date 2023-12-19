@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <vector>
 #include <cassert>
+#include <mutex>
 
 template <typename Value>
 class Histogram : public MetricBase {
@@ -19,6 +20,7 @@ private:
   std::vector<Value> buckets_;
   std::vector<int> buckets_counter_;
   std::atomic<int> InfinityValue_{0};
+  std::mutex counter_mutex_;
 };
 
 template <typename Value>
@@ -30,9 +32,12 @@ Histogram<Value>::Histogram(const std::string& metric_name, const std::string& m
 template <typename Value>
 void Histogram<Value>::Observe(const Value v) {
   int index = FindBucketsIndex(v);
-  int counter_size = buckets_counter_.size();
-  for (int i = index; i < counter_size; ++i) {
-    buckets_counter_[i]++;
+  {
+    std::lock_guard<std::mutex> lk(counter_mutex_);
+    int counter_size = buckets_counter_.size();
+    for (int i = index; i < counter_size; ++i) {
+      buckets_counter_[i]++;
+    }
   }
   InfinityValue_.fetch_add(1);
 }
@@ -43,21 +48,25 @@ std::string Histogram<Value>::Collect() {
   res += metric_help_string_ + HTTP_CRLF;
   res += metric_type_string_ + HTTP_CRLF;
 
-  int bucket_size = buckets_.size();
-  for (int i = 0; i < bucket_size + 1; ++i) {
-    if (i == bucket_size) {
-      metric_labels_["le"] = "Inf";
-      std::string cur_name_and_label = GenLabelString();
-      res += cur_name_and_label + " ";
-      res += std::to_string(InfinityValue_);
-    } else {
-      metric_labels_["le"] = std::to_string(buckets_[i]);
-      std::string cur_name_and_label = GenLabelString();
-      res += cur_name_and_label + " ";
-      res += std::to_string(buckets_counter_[i]);
+  {
+    std::lock_guard<std::mutex> lk(counter_mutex_);
+    int bucket_size = buckets_.size();
+    for (int i = 0; i < bucket_size + 1; ++i) {
+      if (i == bucket_size) {
+        metric_labels_["le"] = "Inf";
+        std::string cur_name_and_label = GenLabelString();
+        res += cur_name_and_label + " ";
+        res += std::to_string(InfinityValue_);
+      } else {
+        metric_labels_["le"] = std::to_string(buckets_[i]);
+        std::string cur_name_and_label = GenLabelString();
+        res += cur_name_and_label + " ";
+        res += std::to_string(buckets_counter_[i]);
+      }
+      res += HTTP_CRLF;
     }
-    res += HTTP_CRLF;
   }
+
   return res;
 }
 
