@@ -1,10 +1,14 @@
-#ifndef __GUAGE_H_
-#define __GUAGE_H_
+#ifndef __HISTOGRAM_H_
+#define __HISTOGRAM_H_
+
+#include <initializer_list>
+#include <vector>
+#include <cassert>
 
 template <typename Value>
 class Histogram : public MetricBase<Value> {
 public:
-  Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::vector<Value>& buckets);
+  Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::initializer_list<Value>& buckets);
   ~Histogram() = default;
   void Observe(const Value v);
   virtual std::string Collect() override;
@@ -18,7 +22,7 @@ private:
 };
 
 template <typename Value>
-Histogram<Value>::Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::vector<Value>& buckets) : MetricBase<Value>(metric_name, metric_help, labels), buckets_(buckets) {
+Histogram<Value>::Histogram(const std::string& metric_name, const std::string& metric_help, LabelList labels, const std::initializer_list<Value>& buckets) : MetricBase<Value>(metric_name, metric_help, labels), buckets_(buckets) {
   assert(CheckBucketsIncrement());
   buckets_counter_ = std::vector<int>(buckets_.size() + 1, 0);
 }
@@ -30,7 +34,7 @@ void Histogram<Value>::Observe(const Value v) {
   for (int i = index; i < counter_size; ++i) {
     buckets_counter_[i]++;
   }
-  InfinityValue_.Add(1);
+  InfinityValue_.fetch_add(1);
 }
 
 template <typename Value>
@@ -42,17 +46,19 @@ std::string Histogram<Value>::Collect() {
   int bucket_size = buckets_.size();
   for (int i = 0; i < bucket_size + 1; ++i) {
     if (i == bucket_size) {
-      metric_labels["le"] = "Inf";
-      std::string cur_name_and_label = GenLabelString();
-      res += MetricBase<Value>::name_and_label_ + " ";
-      res += std::to_string(buckets_counter_[i]);
-    } else {
-      metric_labels["le"] = std::to_string(bucket_[i]);
-      std::string cur_name_and_label = GenLabelString();
-      res += MetricBase<Value>::name_and_label_ + " ";
+      MetricBase<Value>::metric_labels_["le"] = "Inf";
+      std::string cur_name_and_label = MetricBase<Value>::GenLabelString();
+      res += cur_name_and_label + " ";
       res += std::to_string(InfinityValue_);
+    } else {
+      MetricBase<Value>::metric_labels_["le"] = std::to_string(buckets_[i]);
+      std::string cur_name_and_label = MetricBase<Value>::GenLabelString();
+      res += cur_name_and_label + " ";
+      res += std::to_string(buckets_counter_[i]);
+      res += "\n";
     }
   }
+  return res;
 }
 
 template <typename Value>
@@ -68,7 +74,7 @@ int Histogram<Value>::FindBucketsIndex(const Value v) {
     } else if (buckets_[mid] > v && mid == 0) {
       return 0;
     } else if (buckets_[mid] < v && mid < size - 1 && buckets_[mid+1] > v) {
-      return mid;
+      return mid + 1;
     } else if (buckets_[mid] < v && mid < size) {
       start = mid + 1;
     } else if (buckets_[mid] < v && mid == size) {

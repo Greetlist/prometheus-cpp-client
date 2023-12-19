@@ -28,7 +28,7 @@ public:
   void Init() {
     GenPromeTypeStr();
   }
-private:
+protected:
   virtual void GenPromeTypeStr() { //Type need specified Data Type
     metric_type_string_ = "";
   }
