@@ -28,6 +28,7 @@ std::string Counter<Value>::Collect() {
   res += metric_type_string_ + HTTP_CRLF;
   res += name_and_label_ + " ";
   res += std::to_string(value_);
+  res += HTTP_CRLF;
   return res;
 }
 

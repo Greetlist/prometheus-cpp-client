@@ -55,8 +55,8 @@ std::string Histogram<Value>::Collect() {
       std::string cur_name_and_label = GenLabelString();
       res += cur_name_and_label + " ";
       res += std::to_string(buckets_counter_[i]);
-      res += HTTP_CRLF;
     }
+    res += HTTP_CRLF;
   }
   return res;
 }
