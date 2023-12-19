@@ -40,8 +40,8 @@ void Histogram<Value>::Observe(const Value v) {
 template <typename Value>
 std::string Histogram<Value>::Collect() {
   std::string res{""};
-  res += MetricBase<Value>::metric_help_string_ + "\n";
-  res += MetricBase<Value>::metric_type_string_ + "\n";
+  res += MetricBase<Value>::metric_help_string_ + HTTP_CRLF;
+  res += MetricBase<Value>::metric_type_string_ + HTTP_CRLF;
 
   int bucket_size = buckets_.size();
   for (int i = 0; i < bucket_size + 1; ++i) {
@@ -55,7 +55,7 @@ std::string Histogram<Value>::Collect() {
       std::string cur_name_and_label = MetricBase<Value>::GenLabelString();
       res += cur_name_and_label + " ";
       res += std::to_string(buckets_counter_[i]);
-      res += "\n";
+      res += HTTP_CRLF;
     }
   }
   return res;

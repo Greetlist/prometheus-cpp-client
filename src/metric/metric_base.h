@@ -9,6 +9,7 @@
 #include <atomic>
 
 using LabelList = std::initializer_list<std::pair<const std::string, std::string>>;
+#define HTTP_CRLF "\r\n"
 
 template <typename Value>
 class MetricBase {

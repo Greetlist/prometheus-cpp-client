@@ -1,7 +1,9 @@
 #include <iostream>
+#include <thread>
 #include "metric/counter.h"
 #include "metric/guage.h"
 #include "metric/histogram.h"
+#include "http/exporter.h"
 
 using namespace std;
 
@@ -38,5 +40,15 @@ int main(int argc, char** argv)
   h.Observe(6.6);
   h.Observe(10.5);
   std::cout << h.Collect() << std::endl;
+
+  std::vector<std::string> options{
+    "listening_ports", listen_addr_,
+    "num_threads", std::to_string(threads_num_),
+  };
+  Exporter* exporter = new Exporter(options);
+  exporter.AddMetric(&c);
+  exporter.AddMetric(&g);
+  exporter.AddMetric(&h);
+
   return 0;
 }

@@ -24,8 +24,8 @@ Counter<Value>::Counter(const std::string& metric_name, const std::string& metri
 template <typename Value>
 std::string Counter<Value>::Collect() {
   std::string res{""};
-  res += MetricBase<Value>::metric_help_string_ + "\n";
-  res += MetricBase<Value>::metric_type_string_ + "\n";
+  res += MetricBase<Value>::metric_help_string_ + HTTP_CRLF;
+  res += MetricBase<Value>::metric_type_string_ + HTTP_CRLF;
   res += MetricBase<Value>::name_and_label_ + " ";
   res += std::to_string(value_);
   return res;
