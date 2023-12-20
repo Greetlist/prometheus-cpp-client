@@ -5,6 +5,7 @@
 #include "metric/counter.h"
 #include "metric/guage.h"
 #include "metric/histogram.h"
+#include "metric/summary.h"
 #include "http/exporter.h"
 
 using namespace std;
@@ -27,6 +28,7 @@ int main(int argc, char** argv)
     std::vector<Counter<int>*> cv;
     std::vector<Guage<int>*> gv;
     std::vector<Histogram<double>*> hv;
+    std::vector<Summary<double>*> sv;
     for (int i = 0; i < FLAGS_test_object_num; ++i) {
       Counter<int>* c = new Counter<int>(
         std::string{"test_first_counter"},
@@ -61,11 +63,24 @@ int main(int argc, char** argv)
       hv.push_back(h);
     }
 
+    for (int i = 0; i < FLAGS_test_object_num; ++i) {
+      Summary<double>* s = new Summary<double>(
+        std::string{"test_first_summary"},
+        std::string{"Test Summary"},
+        {{"location", "GuangZhou"}, {"category", "test"}, {"sid", std::to_string(i)}},
+        {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}
+      );
+      s->Init();
+      exporter->AddMetric(s);
+      sv.push_back(s);
+    }
+
     for (int i = 0; i < FLAGS_test_object_num * 3; ++i) {
       int index = i % FLAGS_test_object_num;
       cv[index]->AddValue(1);
       gv[index]->SubValue(1);
       hv[index]->Observe(2.5);
+      sv[index]->Observe(3.5);
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     std::cout << "End Of Modify Metrics" << std::endl;
